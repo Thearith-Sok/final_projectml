@@ -193,17 +193,84 @@ def get_user_input(features, predictor):
 # INTERPRETATION
 def interpret(score):
     """Maps continuous score to categorical label."""
-    if score >= 9: return "Excellent!"
-    if score >= 7: return "Good"
-    if score >= 5: return "Fair"
-    return "Poor (needs improvement)"
+    if score >= 9:
+        return "Excellent! Your sleep habits are very healthy. Keep maintaining consistent sleep routines."
+
+    if score >= 7:
+        return ("Good. Your sleep quality is above average, but you could still improve by "
+                "maintaining a consistent sleep schedule and reducing screen time before bed.")
+
+    if score >= 5:
+        return ("Fair. Consider improving your bedtime routine, reducing stress, and avoiding caffeine in the evening.")
+
+    return ("Poor (needs improvement). Try to increase sleep duration, lower stress levels, "
+            "exercise regularly, and avoid heavy meals before bedtime.")
+
+def get_personalized_suggestions(user):
+    """
+    Takes the raw user input DataFrame (single row) and generates personalized advice.
+    Returns a list of suggestions.
+    """
+    u = user.iloc[0]  # Get the row easily
+    suggestions = []
+
+    # Sleep Duration
+    if u["Sleep Duration"] < 6:
+        suggestions.append("Try to sleep at least 7–8 hours per night for better recovery.")
+    elif u["Sleep Duration"] > 9:
+        suggestions.append("Long sleep duration may indicate fatigue — ensure consistent sleep scheduling.")
+
+    # Stress Level
+    if u["Stress Level"] >= 7:
+        suggestions.append("Your stress level is high. Try meditation, deep breathing exercises, or reducing evening workload.")
+    elif u["Stress Level"] <= 3:
+        suggestions.append("Great job managing stress — keep maintaining relaxing routines.")
+
+    # Physical Activity
+    if u["Physical Activity Level"] <= 3:
+        suggestions.append("Increase your physical activity to at least moderate levels (20–30 min daily).")
+    elif u["Physical Activity Level"] >= 8:
+        suggestions.append("You're extremely active — ensure proper rest and hydration.")
+
+    # Heart Rate
+    if u["Heart Rate"] > 90:
+        suggestions.append("Your heart rate is high — try relaxation before bed such as light stretching or avoiding caffeine.")
+    elif u["Heart Rate"] < 50:
+        suggestions.append("Low heart rate often indicates fitness, but if you feel tired, monitor your sleep recovery.")
+
+    # Daily Steps
+    if u["Daily Steps"] < 4000:
+        suggestions.append("Try increasing your daily steps (aim for at least 6,000–7,000).")
+    elif u["Daily Steps"] > 12000:
+        suggestions.append("Great activity level — just ensure you're getting adequate rest.")
+
+    # BMI Category
+    if u["BMI Category"] == "Overweight" or u["BMI Category"] == "Obese":
+        suggestions.append("Improving diet and doing light exercise may help improve sleep quality.")
+    elif u["BMI Category"] == "Underweight":
+        suggestions.append("Ensure proper nutrition — being underweight can also affect sleep quality.")
+
+    # Occupation (optional creativity boost)
+    if u["Occupation"] in ["Nurse", "Doctor", "Security", "Driver"] or \
+       "shift" in u["Occupation"].lower():
+        suggestions.append("Shift-work can reduce sleep quality — try maintaining consistent sleep windows on off days.")
+
+    # Gender-specific example (optional)
+    if u["Gender"].lower() == "female":
+        suggestions.append("Women often experience sleep disturbances during hormonal cycles — consistent routines can help.")
+
+    # If no suggestions matched
+    if not suggestions:
+        suggestions.append("Your lifestyle looks balanced — keep maintaining healthy sleep habits!")
+
+    return suggestions
 
 # MAIN PROGRAM
 def main():
     predictor = SleepQualityPredictor()
 
     # 1. Load and Preprocess Data
-    df = predictor.load_data("Sleep_health_and_lifestyle_dataset.csv")
+    df = predictor.load_data("D:\\vscode\\pythonproject\\ml\\final_project\\Sleep_health_and_lifestyle_dataset.csv")
     X_processed, y, original_feature_names = predictor.preprocess(df)
     
     # 2. Train Models and Select Best
@@ -234,6 +301,13 @@ def main():
 
         print(f"\nPredicted Sleep Quality: {pred:.1f}/10")
         print("Interpretation:", interpret(pred))
+
+        # Personalized suggestions
+        suggestions = get_personalized_suggestions(user_df)
+
+        print("\nPersonalized Suggestions:")
+        for s in suggestions:
+            print("• " + s)
 
         if input("\nTry again? (y/n): ").lower() != "y":
             break
