@@ -153,10 +153,7 @@ class SleepQualityPredictor:
             return feature_importance_df
         return None
 
-
-# ---------------------------------------------------------
-# USER INPUT SIMPLIFIED 
-# ---------------------------------------------------------
+# USER INPUT SIMPLIFIED
 def get_category(label):
     return input(f"{label}: ").strip()
 
